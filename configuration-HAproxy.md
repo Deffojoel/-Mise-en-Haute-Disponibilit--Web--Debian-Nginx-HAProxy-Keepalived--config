@@ -12,52 +12,29 @@ sudo apt install -y haproxy
 
 ###### Configuration : 
 
-
-
 sudo tee /etc/haproxy/haproxy.cfg > /dev/null <<'EOF'
+global
+    log /dev/log local0
+    maxconn 4096
+    daemon
 
-global 
+defaults
+    log     global
+    mode    http
+    option  httplog
+    timeout connect 5s
+    timeout client  30s
+    timeout server  30s
 
-log /dev/log local0 
+frontend fe_http
+    bind *:80
+    default_backend be_sites
 
-maxconn 4096 
-
-daemon 
-
-defaults 
-
-log     global 
-
-mode    http 
-
-option  httplog 
-
-timeout connect 5s 
-
-timeout client  30s 
-
-timeout server  30s 
-
-&nbsp;
-
-frontend fe\_http 
-
-&nbsp;   bind \*:80 
-
-&nbsp;   default\_backend be\_sites 
-
-&nbsp;
-
-backend be\_sites 
-
-&nbsp;   balance roundrobin 
-
-&nbsp;   option httpchk GET / 
-
-&nbsp;   server web1 192.168.50.11:80 check 
-
-&nbsp;   server web2 192.168.50.12:80 check 
-
+backend be_sites
+    balance roundrobin
+    option httpchk GET /
+    server web1 192.168.50.11:80 check
+    server web2 192.168.50.12:80 check
 EOF
 
 
