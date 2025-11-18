@@ -14,22 +14,18 @@ sudo apt install -y nginx
 
 
 
-* sudo mkdir -p /var/www/site 
-* echo "<h1>Site A - Serveur WEB1</h1>" | sudo tee /var/www/site/index.html 
-* sudo tee /etc/nginx/sites-available/site <<'EOF'
+# Créer le fichier index.html avec un contenu simple
+echo "Site A - Serveur WEB1" | sudo tee /var/www/site/index.html
 
+# Créer le fichier de configuration Nginx pour le site
+sudo tee /etc/nginx/sites-available/site > /dev/null <<'EOF'
 server {
+    listen 80;
+    server_name _;
 
-&nbsp; listen 80;
-
-&nbsp; server\_name \_;
-
-&nbsp; root /var/www/site;
-
-&nbsp; index index.html;
-
+    root /var/www/site;
+    index index.html;
 }
-
 EOF
 
 * sudo ln -s /etc/nginx/sites-available/site /etc/nginx/sites-enabled/site 
