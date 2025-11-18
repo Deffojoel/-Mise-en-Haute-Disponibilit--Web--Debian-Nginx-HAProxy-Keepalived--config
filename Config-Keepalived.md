@@ -21,115 +21,64 @@ sudo apt install -y keepalived
 
 
 sudo tee /etc/keepalived/keepalived.conf > /dev/null <<'EOF'
-
-vrrp\_script chk\_haproxy {
-
-&nbsp;   script "/usr/bin/pgrep haproxy"
-
-&nbsp;   interval 2
-
-&nbsp;   weight -20
-
+vrrp_script chk_haproxy {
+    script "/usr/bin/pgrep haproxy"
+    interval 2
+    weight -20
 }
 
+vrrp_instance VI_1 {
+    state MASTER
+    interface ens37
+    virtual_router_id 51
+    priority 110
+    advert_int 1
 
+    authentication {
+        auth_type PASS
+        auth_pass formatecinfo
+    }
 
-vrrp\_instance VI\_1 {
+    virtual_ipaddress {
+        192.168.50.100/24 dev ens37
+    }
 
-&nbsp;   state MASTER
-
-&nbsp;   interface ens34
-
-&nbsp;   virtual\_router\_id 51
-
-&nbsp;   priority 110
-
-&nbsp;   advert\_int 1
-
-
-
-&nbsp;   authentication {
-
-&nbsp;       auth\_type PASS
-
-&nbsp;       auth\_pass formatecinfo
-
-&nbsp;   }
-
-&nbsp;   virtual\_ipaddress {
-
-&nbsp;       192.168.50.100/24 dev ens34
-
-&nbsp;   }
-
-&nbsp;   track\_script {
-
-&nbsp;       chk\_haproxy
-
-&nbsp;   }
-
+    track_script {
+        chk_haproxy
+    }
 }
-
 EOF
-
-
-
-sudo systemctl enable --now keepalived 
-
 
 
 **- config sur le load balancer 2 (Backup)**
 
-
-
 sudo tee /etc/keepalived/keepalived.conf > /dev/null <<'EOF'
-
-vrrp\_script chk\_haproxy {
-
-&nbsp;   script "/usr/bin/pgrep haproxy"
-
-&nbsp;   interval 2
-
-&nbsp;   weight -20
-
+vrrp_script chk_haproxy {
+    script "/usr/bin/pgrep haproxy"
+    interval 2
+    weight -20
 }
 
+vrrp_instance VI_1 {
+    state BACKUP
+    interface ens37
+    virtual_router_id 51
+    priority 100
+    advert_int 1
 
+    authentication {
+        auth_type PASS
+        auth_pass formatecinfo
+    }
 
-vrrp\_instance VI\_1 {
+    virtual_ipaddress {
+        192.168.50.100/24 dev ens37
+    }
 
-&nbsp;   state BACKUP
-
-&nbsp;   interface ens34
-
-&nbsp;   virtual\_router\_id 51
-
-&nbsp;   priority 100
-
-&nbsp;   advert\_int 1
-
-&nbsp;   authentication {
-
-&nbsp;       auth\_type PASS
-
-&nbsp;       auth\_pass formatecinfo
-
-&nbsp;   }
-
-&nbsp;   virtual\_ipaddress {
-
-&nbsp;       192.168.50.100/24 dev ens34
-
-&nbsp;   }
-
-&nbsp;   track\_script {
-
-&nbsp;       chk\_haproxy
-
-&nbsp;   }
-
+    track_script {
+        chk_haproxy
+    }
 }
-
 EOF
 
 
