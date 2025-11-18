@@ -15,6 +15,7 @@ sudo apt install -y nginx
 
 
 # Créer le fichier index.html avec un contenu simple
+sudo mkdir -p /var/www/site/
 echo "Site A - Serveur WEB1" | sudo tee /var/www/site/index.html
 
 # Créer le fichier de configuration Nginx pour le site
