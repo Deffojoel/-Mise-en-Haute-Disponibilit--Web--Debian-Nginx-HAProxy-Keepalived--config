@@ -1,0 +1,126 @@
+# 🔐 Configuration Apache avec SSL auto-signé et authentification HTTP dans une DMZ
+
+## 🎯 Objectif
+
+Configurer un serveur Apache dans une DMZ avec :
+- Authentification HTTP basique
+- Certificat SSL auto-signé
+- Écoute IPv4 sur ports 80 et 443
+- Compatibilité avec redirection NAT via pfSense
+
+---
+
+## 🛠️ Étape 1 – Authentification HTTP
+
+### Installation des outils
+
+```bash
+sudo apt install apache2-utils -y
+
+
+Création du fichier d’authentification
+sudo htpasswd -c /etc/apache2/.htpasswd admin
+
+
+🔒 Remplace admin par l’utilisateur souhaité. Tu seras invité à entrer un mot de passe.
+
+Configuration Apache
+sudo nano /etc/apache2/conf-available/dmz-auth.conf
+
+
+Contenu :
+<Directory "/var/www/html">
+    AuthType Basic
+    AuthName "Accès restreint"
+    AuthUserFile /etc/apache2/.htpasswd
+    Require valid-user
+</Directory>
+
+
+Activation
+sudo a2enconf dmz-auth
+sudo systemctl reload apache2
+
+
+
+🛡️ Étape 2 – HTTPS avec certificat auto-signé
+Activation du module SSL
+sudo a2enmod ssl
+
+
+Génération du certificat
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+-keyout /etc/ssl/private/apache-selfsigned.key \
+-out /etc/ssl/certs/apache-selfsigned.crt \
+-subj "/CN=dmz.local"
+
+
+Configuration du site SSL
+sudo nano /etc/apache2/sites-available/default-ssl.conf
+
+
+Ajoute ou vérifie :
+SSLEngine on
+SSLCertificateFile /etc/ssl/certs/apache-selfsigned.crt
+SSLCertificateKeyFile /etc/ssl/private/apache-selfsigned.key
+
+<VirtualHost *:443>
+    ...
+</VirtualHost>
+
+
+Activation
+sudo a2ensite default-ssl
+sudo systemctl reload apache2
+
+
+
+🧪 Étape 3 – Vérifications réseau et écoute IPv4
+Vérifier les ports d’écoute
+netstat -an | grep LISTEN
+
+
+Résultat attendu :
+tcp 0 0 0.0.0.0:80 LISTEN
+tcp 0 0 0.0.0.0:443 LISTEN
+
+
+Si IPv4 n’est pas actif :
+Activer mpm_prefork
+sudo a2dismod mpm_event
+sudo a2enmod mpm_prefork
+sudo systemctl restart apache2
+
+
+Vérifier les VirtualHosts
+<VirtualHost *:80>
+<VirtualHost *:443>
+
+
+Modifier /etc/apache2/ports.conf
+Listen 0.0.0.0:80
+Listen 0.0.0.0:443
+
+
+Redémarrer Apache
+sudo systemctl restart apache2
+
+
+
+🌐 Étape 4 – Test via pfSense
+Redirection NAT
+- Interface WAN : 192.168.214.147
+- Redirection vers DMZ : 192.168.20.10:80 et :443
+- Règle de pare-feu WAN autorisant TCP vers ports 80 et 443
+Test externe
+- Accès depuis un PC hors LAN ou via 4G
+- URL : http://192.168.214.147 → redirection vers serveur web
+- URL : https://192.168.214.147 → certificat auto-signé + authentification
+
+✅ Résultat attendu
+- Authentification HTTP active
+- Connexion HTTPS sécurisée
+- Écoute IPv4 sur ports 80 et 443
+- Redirection NAT fonctionnelle
+
+
