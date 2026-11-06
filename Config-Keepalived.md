@@ -36,7 +36,7 @@ vrrp_instance VI_1 {
 
     authentication {
         auth_type PASS
-        auth_pass formatecinfo
+        auth_pass CHANGE_ME
     }
 
     virtual_ipaddress {
@@ -68,7 +68,7 @@ vrrp_instance VI_1 {
 
     authentication {
         auth_type PASS
-        auth_pass formatecinfo
+        auth_pass CHANGE_ME
     }
 
     virtual_ipaddress {
